@@ -31,23 +31,9 @@ export default function Home() {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        // Mock data for now
-        setTasks([
-          {
-            id: "1",
-            keywords: "AI, Technology",
-            executionInterval: "Daily",
-            analysisMethod: "Summary",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            id: "2",
-            keywords: "Climate Change",
-            executionInterval: "Weekly",
-            analysisMethod: "Full analysis",
-            createdAt: new Date().toISOString(),
-          },
-        ]);
+        const response = await fetch("http://localhost:3001/tasks");
+        const data = (await response.json()) as Task[];
+        setTasks(data);
       } catch (error) {
         console.error("Failed to fetch tasks:", error);
       }
@@ -102,8 +88,8 @@ export default function Home() {
 
       setMessages((prev) => [...prev, assistantMessage]);
 
-      // If intent was collected, refresh task list
-      if (data.intentCollected) {
+      // If task was collected, refresh task list
+      if (data.taskCollected) {
         const newTask = {
           id: Date.now().toString(),
           keywords: "New keywords",

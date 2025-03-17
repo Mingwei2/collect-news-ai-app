@@ -32,9 +32,9 @@ export default function MessageItem({ message }: MessageItemProps) {
         <div className="text-sm whitespace-pre-wrap">{message.content}</div>
         
         {message.role === "assistant" &&
-        message.content.includes("Intent collected successfully") && (
+        message.content.includes("Task created successfully") && (
           <Badge className="mt-2 bg-green-500 hover:bg-green-600">
-            ✅ Collection successful
+            ✅ Task created
           </Badge>
         )}
         

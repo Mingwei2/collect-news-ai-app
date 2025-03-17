@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { OpenAiService } from './services/openai.service';
 import { ConversationService } from './services/conversation.service';
-import { IntentService, UserIntent } from './services/intent.service';
+import { TaskService, UserTask } from './services/task.service';
 
 @Injectable()
 export class AppService {
   constructor(
     private readonly openAiService: OpenAiService,
     private readonly conversationService: ConversationService,
-    private readonly intentService: IntentService,
+    private readonly taskService: TaskService,
   ) {}
 
   getHello() {
@@ -30,32 +30,32 @@ export class AppService {
       const messages =
         this.conversationService.getFormattedMessages(conversationId);
       const response = await this.openAiService.createChatCompletion(messages);
-      let intentData: UserIntent | null = null;
+      let taskData: UserTask | null = null;
       let aiMessage = response.message || '';
 
       try {
         const jsonMatch = aiMessage.match(/\{[\s\S]*?\}/);
         if (jsonMatch) {
           const jsonStr = jsonMatch[0];
-          const extractedData = JSON.parse(jsonStr) as UserIntent;
+          const extractedData = JSON.parse(jsonStr) as UserTask;
 
           if (
             extractedData.keywords &&
             extractedData.executionInterval &&
             extractedData.analysisMethod
           ) {
-            intentData = extractedData;
+            taskData = extractedData;
 
-            this.intentService.storeIntent(conversationId, intentData);
+            this.taskService.storeTask(conversationId, taskData);
 
             aiMessage =
-              '✅ Intent collected successfully! We will proceed with news collection and analysis according to your requirements.';
+              '✅ Task created successfully! We will proceed with news collection and analysis according to your requirements.';
 
             response.message = aiMessage;
           }
         }
       } catch (error) {
-        console.error('Failed to parse intent JSON', error);
+        console.error('Failed to parse task JSON', error);
       }
 
       this.conversationService.addMessage(
@@ -67,7 +67,7 @@ export class AppService {
       return {
         ...response,
         conversationId,
-        intentCollected: !!intentData,
+        taskCollected: !!taskData,
       };
     } catch (error) {
       console.error('OpenAI API error:', error);
