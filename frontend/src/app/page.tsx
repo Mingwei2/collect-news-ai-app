@@ -1,39 +1,68 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Send, Bot, User, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
+import TaskSidebar from "./components/TaskSidebar";
+import ChatHeader from "./components/ChatHeader";
+import ChatContainer from "./components/ChatContainer";
 
-type Message = {
+export type Message = {
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
 };
 
+export type Task = {
+  id: string;
+  keywords: string;
+  executionInterval: string;
+  analysisMethod: string;
+  createdAt: string;
+};
+
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [selectedTask, setSelectedTask] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
+  // Fetch tasks from backend
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    const fetchTasks = async () => {
+      try {
+        // Mock data for now
+        setTasks([
+          {
+            id: "1",
+            keywords: "AI, Technology",
+            executionInterval: "Daily",
+            analysisMethod: "Summary",
+            createdAt: new Date().toISOString(),
+          },
+          {
+            id: "2",
+            keywords: "Climate Change",
+            executionInterval: "Weekly",
+            analysisMethod: "Full analysis",
+            createdAt: new Date().toISOString(),
+          },
+        ]);
+      } catch (error) {
+        console.error("Failed to fetch tasks:", error);
+      }
+    };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    fetchTasks();
+  }, []);
 
-    if (!input.trim()) return;
+  const handleSubmit = async (message: string) => {
+    if (!message.trim()) return;
 
     // Add user message
     const userMessage: Message = {
       role: "user",
-      content: input,
+      content: message,
       timestamp: new Date(),
     };
 
@@ -48,7 +77,7 @@ export default function Home() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          message: input,
+          message: message,
           conversationId: conversationId,
         }),
       });
@@ -59,7 +88,7 @@ export default function Home() {
 
       const data = await response.json();
 
-      // 保存会话ID
+      // Save conversation ID
       if (data.conversationId && !conversationId) {
         setConversationId(data.conversationId);
       }
@@ -72,10 +101,22 @@ export default function Home() {
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
+
+      // If intent was collected, refresh task list
+      if (data.intentCollected) {
+        const newTask = {
+          id: Date.now().toString(),
+          keywords: "New keywords",
+          executionInterval: "Daily",
+          analysisMethod: "Summary",
+          createdAt: new Date().toISOString(),
+        };
+
+        setTasks((prev) => [...prev, newTask]);
+      }
     } catch (error) {
       console.error("Error:", error);
 
-      // Add error message
       const errorMessage: Message = {
         role: "assistant",
         content: "Sorry, I encountered an error. Please try again later.",
@@ -88,122 +129,40 @@ export default function Home() {
     }
   };
 
+  const resetConversation = () => {
+    setMessages([]);
+    setConversationId(null);
+    setSelectedTask(null);
+  };
+
+  const selectTask = (taskId: string) => {
+    setSelectedTask(taskId);
+    // Here you could load the task details or related conversation
+  };
+
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="container flex items-center justify-between h-16 px-4 mx-auto">
-          <div className="flex items-center space-x-2">
-            <Bot className="w-6 h-6 text-primary" />
-            <h1 className="text-xl font-bold">AI Chat Assistant</h1>
-          </div>
-          <div className="flex items-center space-x-2">
-            {/* Theme toggle or other controls can go here */}
-          </div>
-        </div>
-      </header>
+    <div className="flex h-screen bg-background">
+      <TaskSidebar
+        tasks={tasks}
+        selectedTask={selectedTask}
+        selectTask={selectTask}
+        resetConversation={resetConversation}
+      />
 
-      {/* Messages container */}
-      <main className="flex-1 overflow-y-auto p-4">
-        <div className="container mx-auto max-w-4xl">
-          {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-[60vh] text-center">
-              <Bot className="w-12 h-12 mb-4 text-primary" />
-              <h2 className="text-2xl font-bold mb-2">Welcome to AI Chat!</h2>
-              <p className="text-gray-500 dark:text-gray-400 max-w-md">
-                Start a conversation with the AI assistant. Ask questions, get
-                recommendations, or just chat!
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {messages.map((message, index) => (
-                <div
-                  key={index}
-                  className={cn(
-                    "flex items-start gap-3 p-4 rounded-lg",
-                    message.role === "user"
-                      ? "bg-primary-foreground ml-12"
-                      : "bg-muted mr-12"
-                  )}
-                >
-                  <div className="flex-shrink-0">
-                    {message.role === "user" ? (
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                        <User className="h-5 w-5" />
-                      </div>
-                    ) : (
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted-foreground text-primary-foreground">
-                        <Bot className="h-5 w-5" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <div className="mb-1 font-semibold">
-                      {message.role === "user" ? "You" : "AI Assistant"}
-                    </div>
-                    <div className="whitespace-pre-wrap">{message.content}</div>
+      <div className="flex-1 flex flex-col">
+        <ChatHeader
+          resetConversation={resetConversation}
+          isLoading={isLoading}
+        />
 
-                    {message.role === "assistant" &&
-                      message.content.includes("您的意图收集成功") && (
-                        <div className="mt-2 p-2 bg-green-100 text-green-800 rounded-md">
-                          <span className="font-medium">
-                            ✅ 任务意图收集成功
-                          </span>
-                        </div>
-                      )}
-
-                    <div className="mt-1 text-xs text-muted-foreground">
-                      {new Date(message.timestamp).toLocaleTimeString()}
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {isLoading && (
-                <div className="flex items-start gap-3 p-4 rounded-lg bg-muted mr-12">
-                  <div className="flex-shrink-0">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted-foreground text-primary-foreground">
-                      <Bot className="h-5 w-5" />
-                    </div>
-                  </div>
-                  <div className="flex items-center">
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    <span>Thinking...</span>
-                  </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-          )}
-        </div>
-      </main>
-
-      {/* Input form */}
-      <footer className="sticky bottom-0 z-10 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4">
-        <div className="container mx-auto max-w-4xl">
-          <form onSubmit={handleSubmit} className="flex gap-2">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Type your message..."
-              className="flex-1 min-h-10 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-background"
-              disabled={isLoading}
-            />
-            <button
-              type="submit"
-              className="flex items-center justify-center w-10 h-10 rounded-md bg-primary text-primary-foreground disabled:opacity-50"
-              disabled={isLoading || !input.trim()}
-            >
-              {isLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <Send className="w-5 h-5" />
-              )}
-            </button>
-          </form>
-        </div>
-      </footer>
+        <ChatContainer
+          messages={messages}
+          isLoading={isLoading}
+          input={input}
+          setInput={setInput}
+          handleSubmit={handleSubmit}
+        />
+      </div>
     </div>
   );
 }
