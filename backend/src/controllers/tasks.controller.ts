@@ -9,15 +9,16 @@ import {
   NotFoundException,
   Query,
 } from '@nestjs/common';
-import { TaskService, UserTask } from '../services/task.service';
+import { TaskService } from '../services/tasks.service';
+import { Task } from '../entities/task.entity';
 
 @Controller('tasks')
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
   @Get()
-  getAllTasks(@Query('limit') limit?: string) {
-    const tasks = this.taskService.getAllTasks();
+  async getAllTasks(@Query('limit') limit?: string) {
+    const tasks = await this.taskService.getAllTasks();
 
     if (limit) {
       const limitNum = parseInt(limit, 10);
@@ -28,8 +29,8 @@ export class TaskController {
   }
 
   @Get(':id')
-  getTask(@Param('id') id: string) {
-    const task = this.taskService.getTask(id);
+  async getTask(@Param('id') id: string) {
+    const task = await this.taskService.getTask(id);
     if (!task) {
       throw new NotFoundException(`Task with ID ${id} not found`);
     }
@@ -37,7 +38,7 @@ export class TaskController {
   }
 
   @Post()
-  createTask(@Body() taskData: Omit<UserTask, 'id' | 'createdAt'>) {
+  async createTask(@Body() taskData: Omit<Task, 'id' | 'createdAt'>) {
     const id = Date.now().toString();
     return this.taskService.storeTask(id, {
       ...taskData,
@@ -47,11 +48,11 @@ export class TaskController {
   }
 
   @Put(':id')
-  updateTask(
+  async updateTask(
     @Param('id') id: string,
-    @Body() updateData: Partial<Omit<UserTask, 'id' | 'createdAt'>>,
+    @Body() updateData: Partial<Omit<Task, 'id' | 'createdAt'>>,
   ) {
-    const existingTask = this.taskService.getTask(id);
+    const existingTask = await this.taskService.getTask(id);
     if (!existingTask) {
       throw new NotFoundException(`Task with ID ${id} not found`);
     }
@@ -65,19 +66,19 @@ export class TaskController {
   }
 
   @Delete(':id')
-  deleteTask(@Param('id') id: string) {
-    const task = this.taskService.getTask(id);
+  async deleteTask(@Param('id') id: string) {
+    const task = await this.taskService.getTask(id);
     if (!task) {
       throw new NotFoundException(`Task with ID ${id} not found`);
     }
 
-    this.taskService.deleteTask(id);
+    await this.taskService.deleteTask(id);
     return { success: true, message: `Task with ID ${id} has been deleted` };
   }
 
   @Get(':id/results')
-  getTaskResults(@Param('id') id: string) {
-    const task = this.taskService.getTask(id);
+  async getTaskResults(@Param('id') id: string) {
+    const task = await this.taskService.getTask(id);
     if (!task) {
       throw new NotFoundException(`Task with ID ${id} not found`);
     }

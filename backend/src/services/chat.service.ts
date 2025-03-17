@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { OpenAiService } from './openai.service';
 import { ConversationService } from './conversation.service';
-import { TaskService, UserTask } from './task.service';
-
+import { TaskService } from './tasks.service';
+import { Task } from 'src/entities/task.entity';
 @Injectable()
 export class ChatService {
   constructor(
@@ -30,10 +30,13 @@ export class ChatService {
       );
 
       const response = await this.openAiService.createChatCompletion(messages);
-      let taskData: UserTask | null = null;
+      let taskData: Task | null = null;
       let aiMessage = response.message || '';
 
-      taskData = this.tryExtractTaskData(aiMessage, currentConversationId);
+      taskData = await this.tryExtractTaskData(
+        aiMessage,
+        currentConversationId,
+      );
       if (taskData) {
         aiMessage =
           '✅ Task created successfully! We will proceed with news collection and analysis according to your requirements.';
@@ -57,22 +60,22 @@ export class ChatService {
     }
   }
 
-  private tryExtractTaskData(
+  private async tryExtractTaskData(
     aiMessage: string,
     conversationId: string,
-  ): UserTask | null {
+  ): Promise<Task | null> {
     try {
       const jsonMatch = aiMessage.match(/\{[\s\S]*?\}/);
       if (jsonMatch) {
         const jsonStr = jsonMatch[0];
-        const extractedData = JSON.parse(jsonStr) as UserTask;
+        const extractedData = JSON.parse(jsonStr) as Task;
 
         if (
           extractedData.keywords &&
           extractedData.executionInterval &&
           extractedData.analysisMethod
         ) {
-          this.taskService.storeTask(conversationId, extractedData);
+          await this.taskService.storeTask(conversationId, extractedData);
           return extractedData;
         }
       }
