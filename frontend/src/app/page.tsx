@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import TaskSidebar from "./components/TaskSidebar";
 import ChatHeader from "./components/ChatHeader";
 import ChatContainer from "./components/ChatContainer";
+import TaskDetail from "./components/TaskDetail";
 
 export type Message = {
   role: "user" | "assistant";
@@ -19,6 +20,26 @@ export type Task = {
   createdAt: string;
 };
 
+export type TaskDetail = {
+  id: string;
+  keywords: string;
+  executionInterval: string;
+  analysisMethod: string;
+  createdAt: string;
+  status: "pending" | "completed" | "failed";
+  lastExecuted?: string;
+  results?: Array<{
+    date: string;
+    summary: string;
+    articles: Array<{
+      title: string;
+      url: string;
+      source: string;
+      publishDate: string;
+    }>;
+  }>;
+};
+
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -27,8 +48,9 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [isTasksLoading, setIsTasksLoading] = useState(true);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [taskDetail, setTaskDetail] = useState<TaskDetail | null>(null);
+  const [isTaskDetailLoading, setIsTaskDetailLoading] = useState(false);
 
-  // Fetch tasks from backend
   useEffect(() => {
     const fetchTasks = async () => {
       setIsTasksLoading(true);
@@ -49,7 +71,6 @@ export default function Home() {
   const handleSubmit = async (message: string) => {
     if (!message.trim()) return;
 
-    // Add user message
     const userMessage: Message = {
       role: "user",
       content: message,
@@ -78,12 +99,10 @@ export default function Home() {
 
       const data = await response.json();
 
-      // Save conversation ID
       if (data.conversationId && !conversationId) {
         setConversationId(data.conversationId);
       }
 
-      // Add assistant message
       const assistantMessage: Message = {
         role: "assistant",
         content: data.message,
@@ -92,16 +111,8 @@ export default function Home() {
 
       setMessages((prev) => [...prev, assistantMessage]);
 
-      // If task was collected, refresh task list
       if (data.taskCollected) {
-        const newTask = {
-          id: Date.now().toString(),
-          keywords: "New keywords",
-          executionInterval: "Daily",
-          analysisMethod: "Summary",
-          createdAt: new Date().toISOString(),
-        };
-
+        const newTask = data.task;
         setTasks((prev) => [...prev, newTask]);
       }
     } catch (error) {
@@ -125,9 +136,24 @@ export default function Home() {
     setSelectedTask(null);
   };
 
-  const selectTask = (taskId: string) => {
+  const selectTask = async (taskId: string) => {
     setSelectedTask(taskId);
-    // Here you could load the task details or related conversation
+    setIsTaskDetailLoading(true);
+
+    try {
+      const response = await fetch(`http://localhost:3001/tasks/${taskId}`);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch task details");
+      }
+
+      const data = await response.json();
+      setTaskDetail(data);
+    } catch (error) {
+      console.error("Error fetching task details:", error);
+    } finally {
+      setIsTaskDetailLoading(false);
+    }
   };
 
   return (
@@ -141,18 +167,31 @@ export default function Home() {
       />
 
       <div className="flex-1 flex flex-col">
-        <ChatHeader
-          resetConversation={resetConversation}
-          isLoading={isLoading}
-        />
+        {selectedTask ? (
+          <TaskDetail
+            taskDetail={taskDetail}
+            isLoading={isTaskDetailLoading}
+            onBack={() => {
+              setSelectedTask(null);
+              setTaskDetail(null);
+            }}
+          />
+        ) : (
+          <>
+            <ChatHeader
+              resetConversation={resetConversation}
+              isLoading={isLoading}
+            />
 
-        <ChatContainer
-          messages={messages}
-          isLoading={isLoading}
-          input={input}
-          setInput={setInput}
-          handleSubmit={handleSubmit}
-        />
+            <ChatContainer
+              messages={messages}
+              isLoading={isLoading}
+              input={input}
+              setInput={setInput}
+              handleSubmit={handleSubmit}
+            />
+          </>
+        )}
       </div>
     </div>
   );

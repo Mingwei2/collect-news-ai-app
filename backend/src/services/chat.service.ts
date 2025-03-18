@@ -39,7 +39,7 @@ export class ChatService {
       );
       if (taskData) {
         aiMessage =
-          '✅ Task created successfully! We will proceed with news collection and analysis according to your requirements.';
+          '✅ Task created successfully! We will proceed with news collection and analysis according to your requirements, and you can check the task details in the task list.';
         response.message = aiMessage;
       }
 
@@ -53,6 +53,7 @@ export class ChatService {
         ...response,
         conversationId: currentConversationId,
         taskCollected: !!taskData,
+        task: taskData,
       };
     } catch (error) {
       console.error('Chat processing error:', error);
@@ -75,8 +76,10 @@ export class ChatService {
           extractedData.executionInterval &&
           extractedData.analysisMethod
         ) {
-          await this.taskService.storeTask(conversationId, extractedData);
-          return extractedData;
+          return await this.taskService.storeTask(
+            conversationId,
+            extractedData,
+          );
         }
       }
       return null;
