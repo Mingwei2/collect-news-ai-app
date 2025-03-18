@@ -4,9 +4,11 @@ import { Separator } from "@/components/ui/separator";
 import { Plus, Newspaper } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Task } from "../page";
+import { Skeleton } from "../../components/ui/skeleton";
 
 interface TaskSidebarProps {
   tasks: Task[];
+  isLoading: boolean;
   selectedTask: string | null;
   selectTask: (taskId: string) => void;
   resetConversation: () => void;
@@ -14,6 +16,7 @@ interface TaskSidebarProps {
 
 export default function TaskSidebar({
   tasks,
+  isLoading,
   selectedTask,
   selectTask,
   resetConversation,
@@ -26,32 +29,44 @@ export default function TaskSidebar({
           News Tasks
         </h2>
       </div>
-      
+
       <Separator />
-      
+
       <ScrollArea className="flex-1">
         <div className="p-3">
-          <Button 
-            variant="outline" 
-            className="w-full mb-4 justify-start" 
+          <Button
+            variant="outline"
+            className="w-full mb-4 justify-start"
             onClick={resetConversation}
           >
             <Plus className="h-4 w-4 mr-2" />
             Create New Task
           </Button>
-          
-          {tasks.length === 0 ? (
+
+          {isLoading ? (
+            <>
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="mb-3 p-3 rounded-md">
+                  <Skeleton className="h-4 w-3/4 mb-2" />
+                  <Skeleton className="h-3 w-1/2 mb-1" />
+                  <Skeleton className="h-3 w-2/3" />
+                </div>
+              ))}
+            </>
+          ) : tasks.length === 0 ? (
             <div className="text-center p-4 text-muted-foreground text-sm">
               No tasks yet. Start a conversation to create one.
             </div>
           ) : (
             <div className="space-y-2">
-              {tasks.map(task => (
-                <div 
+              {tasks.map((task) => (
+                <div
                   key={task.id}
                   className={cn(
                     "p-3 rounded-md cursor-pointer hover:bg-accent/80 transition-colors",
-                    selectedTask === task.id ? "bg-accent text-accent-foreground" : "bg-card"
+                    selectedTask === task.id
+                      ? "bg-accent text-accent-foreground"
+                      : "bg-card"
                   )}
                   onClick={() => selectTask(task.id)}
                 >
@@ -68,4 +83,4 @@ export default function TaskSidebar({
       </ScrollArea>
     </div>
   );
-} 
+}

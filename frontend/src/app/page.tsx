@@ -25,17 +25,21 @@ export default function Home() {
   const [selectedTask, setSelectedTask] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isTasksLoading, setIsTasksLoading] = useState(true);
   const [conversationId, setConversationId] = useState<string | null>(null);
 
   // Fetch tasks from backend
   useEffect(() => {
     const fetchTasks = async () => {
+      setIsTasksLoading(true);
       try {
         const response = await fetch("http://localhost:3001/tasks");
         const data = (await response.json()) as Task[];
         setTasks(data);
       } catch (error) {
         console.error("Failed to fetch tasks:", error);
+      } finally {
+        setIsTasksLoading(false);
       }
     };
 
@@ -130,6 +134,7 @@ export default function Home() {
     <div className="flex h-screen bg-background">
       <TaskSidebar
         tasks={tasks}
+        isLoading={isTasksLoading}
         selectedTask={selectedTask}
         selectTask={selectTask}
         resetConversation={resetConversation}
