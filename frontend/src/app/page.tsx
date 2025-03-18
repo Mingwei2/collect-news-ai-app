@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import TaskSidebar from "./components/TaskSidebar";
 import ChatHeader from "./components/ChatHeader";
 import ChatContainer from "./components/ChatContainer";
 import TaskDetail from "./components/TaskDetail";
+import PageLoading from "./components/PageLoading";
 
 export type Message = {
   role: "user" | "assistant";
@@ -50,6 +52,8 @@ export default function Home() {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [taskDetail, setTaskDetail] = useState<TaskDetail | null>(null);
   const [isTaskDetailLoading, setIsTaskDetailLoading] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -58,6 +62,11 @@ export default function Home() {
         const response = await fetch("http://localhost:3001/tasks");
         const data = (await response.json()) as Task[];
         setTasks(data);
+        
+        const taskId = searchParams.get('taskId');
+        if (taskId) {
+          selectTask(taskId);
+        }
       } catch (error) {
         console.error("Failed to fetch tasks:", error);
       } finally {
@@ -66,7 +75,7 @@ export default function Home() {
     };
 
     fetchTasks();
-  }, []);
+  }, [searchParams]);
 
   const handleSubmit = async (message: string) => {
     if (!message.trim()) return;
@@ -134,11 +143,14 @@ export default function Home() {
     setMessages([]);
     setConversationId(null);
     setSelectedTask(null);
+    setTaskDetail(null);
+    router.push('/');
   };
 
   const selectTask = async (taskId: string) => {
     setSelectedTask(taskId);
     setIsTaskDetailLoading(true);
+    router.push(`?taskId=${taskId}`);
 
     try {
       const response = await fetch(`http://localhost:3001/tasks/${taskId}`);
@@ -156,6 +168,12 @@ export default function Home() {
     }
   };
 
+  const isPageLoading = isTasksLoading || isTaskDetailLoading;
+
+  if (isPageLoading) {
+    return <PageLoading />;
+  }
+
   return (
     <div className="flex h-screen bg-background">
       <TaskSidebar
@@ -171,10 +189,6 @@ export default function Home() {
           <TaskDetail
             taskDetail={taskDetail}
             isLoading={isTaskDetailLoading}
-            onBack={() => {
-              setSelectedTask(null);
-              setTaskDetail(null);
-            }}
           />
         ) : (
           <>
