@@ -1,4 +1,3 @@
-import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar, Clock, BarChart2 } from "lucide-react";
 import { TaskDetail as TaskDetailType } from "../page";
 import { formatDistanceToNow } from "date-fns";
@@ -12,18 +11,13 @@ export default function TaskDetail({ taskDetail, isLoading }: TaskDetailProps) {
   return (
     <div className="flex-1 flex flex-col">
       <div className="border-b border-border p-4 flex items-center">
-        {isLoading ? (
-          <Skeleton className="h-6 w-1/3" />
-        ) : (
-          <h2 className="text-xl font-semibold">{taskDetail?.keywords}</h2>
-        )}
+        <h2 className="text-xl font-semibold">{taskDetail?.keywords}</h2>
       </div>
 
       <div className="flex-1 overflow-auto p-6">
         {isLoading ? (
-          <div className="space-y-6">
-            <Skeleton className="h-32 w-full" />
-            <Skeleton className="h-64 w-full" />
+          <div className="flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
           </div>
         ) : taskDetail ? (
           <div className="space-y-6">
@@ -36,7 +30,7 @@ export default function TaskDetail({ taskDetail, isLoading }: TaskDetailProps) {
                     Created:{" "}
                   </span>
                   <span className="text-sm font-medium">
-                    {new Date(taskDetail.createdAt).toLocaleDateString()}
+                    {new Date(taskDetail.createdAt).toLocaleString()}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">

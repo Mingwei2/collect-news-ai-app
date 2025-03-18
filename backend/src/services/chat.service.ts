@@ -74,7 +74,8 @@ export class ChatService {
         if (
           extractedData.keywords &&
           extractedData.executionInterval &&
-          extractedData.analysisMethod
+          extractedData.analysisMethod &&
+          extractedData.cronExpression
         ) {
           return await this.taskService.storeTask(
             conversationId,

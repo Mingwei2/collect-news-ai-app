@@ -6,7 +6,6 @@ import TaskSidebar from "./components/TaskSidebar";
 import ChatHeader from "./components/ChatHeader";
 import ChatContainer from "./components/ChatContainer";
 import TaskDetail from "./components/TaskDetail";
-import PageLoading from "./components/PageLoading";
 
 export type Message = {
   role: "user" | "assistant";
@@ -62,11 +61,6 @@ export default function Home() {
         const response = await fetch("http://localhost:3001/tasks");
         const data = (await response.json()) as Task[];
         setTasks(data);
-        
-        const taskId = searchParams.get('taskId');
-        if (taskId) {
-          selectTask(taskId);
-        }
       } catch (error) {
         console.error("Failed to fetch tasks:", error);
       } finally {
@@ -75,6 +69,13 @@ export default function Home() {
     };
 
     fetchTasks();
+  }, []);
+
+  useEffect(() => {
+    const taskId = searchParams.get("taskId");
+    if (taskId) {
+      selectTask(taskId);
+    }
   }, [searchParams]);
 
   const handleSubmit = async (message: string) => {
@@ -144,7 +145,7 @@ export default function Home() {
     setConversationId(null);
     setSelectedTask(null);
     setTaskDetail(null);
-    router.push('/');
+    router.push("/");
   };
 
   const selectTask = async (taskId: string) => {
@@ -156,7 +157,9 @@ export default function Home() {
       const response = await fetch(`http://localhost:3001/tasks/${taskId}`);
 
       if (!response.ok) {
-        throw new Error("Failed to fetch task details");
+        setIsTaskDetailLoading(false);
+        setSelectedTask(null);
+        router.push("/");
       }
 
       const data = await response.json();
@@ -167,12 +170,6 @@ export default function Home() {
       setIsTaskDetailLoading(false);
     }
   };
-
-  const isPageLoading = isTasksLoading || isTaskDetailLoading;
-
-  if (isPageLoading) {
-    return <PageLoading />;
-  }
 
   return (
     <div className="flex h-screen bg-background">
@@ -186,10 +183,11 @@ export default function Home() {
 
       <div className="flex-1 flex flex-col">
         {selectedTask ? (
-          <TaskDetail
-            taskDetail={taskDetail}
-            isLoading={isTaskDetailLoading}
-          />
+          <TaskDetail taskDetail={taskDetail} isLoading={isTaskDetailLoading} />
+        ) : isTasksLoading ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+          </div>
         ) : (
           <>
             <ChatHeader

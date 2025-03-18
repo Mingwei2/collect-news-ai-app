@@ -15,6 +15,7 @@ export class TaskService {
       if (
         !taskData.keywords ||
         !taskData.executionInterval ||
+        !taskData.cronExpression ||
         !taskData.analysisMethod
       ) {
         throw new Error('Incomplete task data');
@@ -24,8 +25,10 @@ export class TaskService {
         id,
         keywords: taskData.keywords,
         executionInterval: taskData.executionInterval,
+        cronExpression: taskData.cronExpression,
         analysisMethod: taskData.analysisMethod,
         createdAt: taskData.createdAt || new Date(),
+        status: 'running',
       };
 
       await this.tasksRepository.save(userTask);

@@ -12,8 +12,14 @@ export class Task {
   executionInterval: string;
 
   @Column()
+  cronExpression: string;
+
+  @Column()
   analysisMethod: string;
 
   @Column()
   createdAt: Date;
+
+  @Column()
+  status: 'running' | 'completed' | 'failed';
 }
