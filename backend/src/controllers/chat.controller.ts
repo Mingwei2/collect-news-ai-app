@@ -15,9 +15,4 @@ export class ChatController {
     const { message, conversationId } = chatRequest;
     return this.chatService.processChat(message, conversationId);
   }
-
-  @Get('news')
-  async getNews(@Query('keywords') keywords: string) {
-    return this.newsService.analyzeNewsByAI(keywords);
-  }
 }

@@ -2,16 +2,20 @@ import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { OpenAiService } from './openai.service';
+import { TaskResult } from 'src/entities/taskResult.entity';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 @Injectable()
 export class NewsService {
 
     private readonly newsApiKey: string;
     private readonly newsApiUrl: string;
 
-    constructor(private readonly httpService: HttpService, private readonly openAiService: OpenAiService) {
+    constructor(private readonly httpService: HttpService, private readonly openAiService: OpenAiService,
+        @InjectRepository(TaskResult)
+        private taskResultsRepository: Repository<TaskResult>) {
         this.newsApiKey = process.env.NEWS_API_KEY || '';
         this.newsApiUrl = process.env.NEWS_API_URL || '';
-
     }
 
     async getNews(keywords: string) {
@@ -39,10 +43,15 @@ export class NewsService {
         }));
     }
 
-    async analyzeNewsByAI(keywords: string) {
+    async analyzeNewsByAI(taskId: string, keywords: string, analysisMethod: string) {
         const news = await this.getNews(keywords);
         const newsString = news.map(article => `${article.title}\n${article.description}\n${article.url}`).join('\n');
-        const response = await this.openAiService.createChatCompletion([{ role: 'user', content: newsString }, { role: 'system', content: '你是新闻分析师，需要分析新闻，并给出新闻的摘要。' }]);
+        const response = await this.openAiService.createChatCompletion([{ role: 'user', content: newsString }, { role: 'system', content: '你是新闻分析师，需要分析新闻，并给出新闻的摘要，使用' + analysisMethod + '的分析方法' }]);
+        const taskResult = new TaskResult();
+        taskResult.taskId = taskId;
+        taskResult.result = response.message || '';
+        taskResult.createdAt = new Date();
+        await this.taskResultsRepository.save(taskResult);
         return response.message;
     }
 }

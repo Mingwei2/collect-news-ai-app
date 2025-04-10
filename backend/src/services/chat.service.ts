@@ -3,12 +3,19 @@ import { OpenAiService } from './openai.service';
 import { ConversationService } from './conversation.service';
 import { TaskService } from './tasks.service';
 import { Task } from 'src/entities/task.entity';
+import { CronJob } from 'cron';
+import { Logger } from '@nestjs/common';
+import { NewsService } from './news.service';
+import { SchedulerRegistry } from '@nestjs/schedule';
 @Injectable()
 export class ChatService {
+  private readonly logger = new Logger(ChatService.name);
   constructor(
     private readonly openAiService: OpenAiService,
     private readonly conversationService: ConversationService,
     private readonly taskService: TaskService,
+    private readonly newsService: NewsService,
+    private readonly schedulerRegistry: SchedulerRegistry,
   ) {}
 
   async processChat(message: string, conversationId?: string) {
@@ -77,10 +84,16 @@ export class ChatService {
           extractedData.analysisMethod &&
           extractedData.cronExpression
         ) {
-          return await this.taskService.storeTask(
+          const task = await this.taskService.storeTask(
             conversationId,
             extractedData,
           );
+          const job = new CronJob(`${task.cronExpression}`, () => {
+            this.newsService.analyzeNewsByAI(task.id, task.keywords, task.analysisMethod);
+          });
+          this.schedulerRegistry.addCronJob(task.id, job);
+          job.start();
+          return task;
         }
       }
       return null;
