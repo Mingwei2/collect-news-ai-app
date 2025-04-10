@@ -31,10 +31,11 @@ export class TaskController {
   @Get(':id')
   async getTask(@Param('id') id: string) {
     const task = await this.taskService.getTask(id);
+    const results = await this.taskService.getTaskResults(id);
     if (!task) {
       throw new NotFoundException(`Task with ID ${id} not found`);
     }
-    return task;
+    return { ...task, results };
   }
 
   @Post()

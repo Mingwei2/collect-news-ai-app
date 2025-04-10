@@ -21,6 +21,14 @@ export type Task = {
   createdAt: string;
 };
 
+export type TaskResult = {
+  id: string;
+  taskId: string;
+  result: string;
+  createdAt: string;
+};
+
+
 export type TaskDetail = {
   id: string;
   keywords: string;
@@ -29,16 +37,7 @@ export type TaskDetail = {
   createdAt: string;
   status: "pending" | "completed" | "failed";
   lastExecuted?: string;
-  results?: Array<{
-    date: string;
-    summary: string;
-    articles: Array<{
-      title: string;
-      url: string;
-      source: string;
-      publishDate: string;
-    }>;
-  }>;
+  results?: TaskResult[];
 };
 
 export default function Home() {

@@ -22,12 +22,12 @@ export default function TaskDetail({ taskDetail, isLoading }: TaskDetailProps) {
         ) : taskDetail ? (
           <div className="space-y-6">
             <div className="bg-card rounded-lg p-5 shadow-sm">
-              <h3 className="text-lg font-medium mb-4">Task Information</h3>
+              <h3 className="text-lg font-medium mb-4">任务信息</h3>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">
-                    Created:{" "}
+                    创建时间:{" "}
                   </span>
                   <span className="text-sm font-medium">
                     {new Date(taskDetail.createdAt).toLocaleString()}
@@ -36,7 +36,7 @@ export default function TaskDetail({ taskDetail, isLoading }: TaskDetailProps) {
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">
-                    Frequency:{" "}
+                    执行频率:{" "}
                   </span>
                   <span className="text-sm font-medium">
                     {taskDetail.executionInterval}
@@ -45,7 +45,7 @@ export default function TaskDetail({ taskDetail, isLoading }: TaskDetailProps) {
                 <div className="flex items-center gap-2">
                   <BarChart2 className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">
-                    Analysis:{" "}
+                    分析方法:{" "}
                   </span>
                   <span className="text-sm font-medium">
                     {taskDetail.analysisMethod}
@@ -53,16 +53,15 @@ export default function TaskDetail({ taskDetail, isLoading }: TaskDetailProps) {
                 </div>
                 <div className="flex items-center gap-2">
                   <div
-                    className={`h-2 w-2 rounded-full ${
-                      taskDetail.status === "completed"
+                    className={`h-2 w-2 rounded-full ${taskDetail.status === "completed"
                         ? "bg-green-500"
                         : taskDetail.status === "failed"
-                        ? "bg-red-500"
-                        : "bg-yellow-500"
-                    }`}
+                          ? "bg-red-500"
+                          : "bg-yellow-500"
+                      }`}
                   />
                   <span className="text-sm text-muted-foreground">
-                    Status:{" "}
+                    状态:{" "}
                   </span>
                   <span className="text-sm font-medium capitalize">
                     {taskDetail.status}
@@ -73,67 +72,34 @@ export default function TaskDetail({ taskDetail, isLoading }: TaskDetailProps) {
 
             {taskDetail.results && taskDetail.results.length > 0 ? (
               <div className="space-y-4">
-                <h3 className="text-lg font-medium">Latest Results</h3>
+                <h3 className="text-lg font-medium">最新结果</h3>
 
                 {taskDetail.results.map((result, index) => (
                   <div key={index} className="bg-card rounded-lg p-5 shadow-sm">
                     <div className="flex justify-between items-center mb-4">
                       <h4 className="font-medium">
-                        {new Date(result.date).toLocaleDateString()}
+                        {new Date(result.createdAt).toLocaleString()}
                       </h4>
                       <span className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(new Date(result.date), {
+                        {formatDistanceToNow(new Date(result.createdAt), {
                           addSuffix: true,
                         })}
                       </span>
                     </div>
 
                     <div className="mb-6">
-                      <h5 className="text-sm font-medium mb-2">Summary</h5>
                       <p className="text-sm text-muted-foreground">
-                        {result.summary}
+                        {result.result}
                       </p>
                     </div>
-
-                    {result.articles.length > 0 && (
-                      <div>
-                        <h5 className="text-sm font-medium mb-3">
-                          Related Articles
-                        </h5>
-                        <div className="space-y-3">
-                          {result.articles.map((article, articleIndex) => (
-                            <a
-                              key={articleIndex}
-                              href={article.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="block p-3 bg-muted/50 rounded-md hover:bg-muted transition-colors"
-                            >
-                              <h6 className="font-medium mb-1">
-                                {article.title}
-                              </h6>
-                              <div className="flex justify-between text-xs text-muted-foreground">
-                                <span>{article.source}</span>
-                                <span>
-                                  {new Date(
-                                    article.publishDate
-                                  ).toLocaleDateString()}
-                                </span>
-                              </div>
-                            </a>
-                          ))}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
             ) : (
               <div className="bg-muted/30 rounded-lg p-8 text-center">
-                <h3 className="text-lg font-medium mb-2">No Results Yet</h3>
+                <h3 className="text-lg font-medium mb-2">暂无结果</h3>
                 <p className="text-muted-foreground">
-                  This task hasn&apos;t been executed yet or no results are
-                  available.
+                  该任务尚未执行或暂无结果。
                 </p>
               </div>
             )}
@@ -141,7 +107,7 @@ export default function TaskDetail({ taskDetail, isLoading }: TaskDetailProps) {
         ) : (
           <div className="flex items-center justify-center h-full">
             <p className="text-muted-foreground">
-              Select a task to view details
+              请选择一个任务查看详情
             </p>
           </div>
         )}

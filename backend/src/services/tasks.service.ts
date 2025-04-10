@@ -2,13 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Task } from '../entities/task.entity';
+import { TaskResult } from '../entities/taskResult.entity';
 
 @Injectable()
 export class TaskService {
   constructor(
     @InjectRepository(Task)
     private tasksRepository: Repository<Task>,
-  ) {}
+    @InjectRepository(TaskResult)
+    private taskResultsRepository: Repository<TaskResult>,
+  ) { }
 
   async storeTask(id: string, taskData: Task): Promise<Task> {
     try {
@@ -54,5 +57,9 @@ export class TaskService {
 
   async deleteTask(id: string): Promise<void> {
     await this.tasksRepository.delete(id);
+  }
+
+  async getTaskResults(id: string): Promise<TaskResult[]> {
+    return this.taskResultsRepository.find({ where: { taskId: id }, order: { createdAt: 'DESC' } });
   }
 }
