@@ -7,7 +7,8 @@ import { ChatController } from './controllers/chat.controller';
 import { ChatService } from './services/chat.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TasksModule } from './modules/tasks.module';
-
+import { HttpModule } from '@nestjs/axios';
+import { NewsService } from './services/news.service';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -16,10 +17,12 @@ import { TasksModule } from './modules/tasks.module';
       database: 'database.sqlite',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
+      autoLoadEntities: true,
     }),
     TasksModule,
+    HttpModule,
   ],
   controllers: [AppController, ChatController],
-  providers: [OpenAiService, ConversationService, ChatService],
+  providers: [OpenAiService, ConversationService, ChatService, NewsService],
 })
-export class AppModule {}
+export class AppModule { }
