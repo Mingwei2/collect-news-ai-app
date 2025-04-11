@@ -73,5 +73,5 @@ npm run dev
 
 后端需要在.env文件中配置以下环境变量：
 - OPENAI_API_KEY: OpenAI API密钥
+- OPENAI_BASE_URL: OPENAI API URL
 - NEWS_API_KEY: 新闻API密钥
-- NEWS_API_URL: 新闻API地址
