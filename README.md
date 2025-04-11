@@ -20,7 +20,7 @@
 ### 前端 (Frontend)
 
 - **技术栈**：Next.js 15、React 19、TypeScript、Tailwind CSS
-- **UI组件**：使用Radix UI和自定义组件构建现代化界面
+- **UI组件**：使用Shadncn UI和自定义组件构建现代化界面
 - **功能模块**：
   - 任务管理界面：创建、查看和管理新闻收集任务
   - 聊天界面：与AI助手进行交互
