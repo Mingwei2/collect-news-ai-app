@@ -9,13 +9,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 export class NewsService {
 
     private readonly newsApiKey: string;
-    private readonly newsApiUrl: string;
+    private readonly newsApiUrl = 'https://newsapi.org/v2/everything';
 
     constructor(private readonly httpService: HttpService, private readonly openAiService: OpenAiService,
         @InjectRepository(TaskResult)
         private taskResultsRepository: Repository<TaskResult>) {
         this.newsApiKey = process.env.NEWS_API_KEY || '';
-        this.newsApiUrl = process.env.NEWS_API_URL || '';
     }
 
     async getNews(keywords: string) {
