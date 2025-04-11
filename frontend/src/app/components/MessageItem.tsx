@@ -34,7 +34,7 @@ export default function MessageItem({ message }: MessageItemProps) {
         {message.role === "assistant" &&
         message.content.includes("Task created successfully") && (
           <Badge className="mt-2 bg-green-500 hover:bg-green-600">
-            ✅ Task created
+            ✅ 任务创建成功
           </Badge>
         )}
         

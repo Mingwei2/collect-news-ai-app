@@ -25,7 +25,7 @@ export default function MessageList({ messages, isLoading }: MessageListProps) {
           <div className="flex items-center">
             <div className="flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
-              <span className="text-sm">Processing your request...</span>
+              <span className="text-sm">请求中...</span>
             </div>
           </div>
         </div>

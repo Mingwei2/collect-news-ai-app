@@ -23,7 +23,7 @@ export class ConversationService {
   当你收集齐了所有必要的信息后（重点：确保你已收集了*全部*信息），请使用以下结构化的 JSON 格式进行回应：
   
   {
-    "keywords": "用户指定的关键词",
+    "keywords": "用户指定的关键词，需要简短",
     "executionInterval": "用户指定的时间间隔",
     "cronExpression": "根据执行间隔转换得到的cron表达式",
     "analysisMethod": "用户指定的分析方法"

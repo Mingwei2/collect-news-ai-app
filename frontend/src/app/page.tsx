@@ -6,6 +6,9 @@ import TaskSidebar from "./components/TaskSidebar";
 import ChatHeader from "./components/ChatHeader";
 import ChatContainer from "./components/ChatContainer";
 import TaskDetail from "./components/TaskDetail";
+import TaskCreationDialog from "./components/TaskCreationDialog";
+import { PlusCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export type Message = {
   role: "user" | "assistant";
@@ -28,16 +31,16 @@ export type TaskResult = {
   createdAt: string;
 };
 
-
 export type TaskDetail = {
   id: string;
   keywords: string;
   executionInterval: string;
   analysisMethod: string;
   createdAt: string;
-  status: "pending" | "completed" | "failed";
+  status: "running" | "stopped" | "deleted";
   lastExecuted?: string;
   results?: TaskResult[];
+  nextDate?: Date;
 };
 
 export default function Home() {
@@ -50,6 +53,10 @@ export default function Home() {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [taskDetail, setTaskDetail] = useState<TaskDetail | null>(null);
   const [isTaskDetailLoading, setIsTaskDetailLoading] = useState(false);
+  const [showNewTask, setShowNewTask] = useState(false);
+  const [showTaskDialog, setShowTaskDialog] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [newTaskId, setNewTaskId] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -123,6 +130,18 @@ export default function Home() {
       if (data.taskCollected) {
         const newTask = data.task;
         setTasks((prev) => [...prev, newTask]);
+        setNewTaskId(newTask.id);
+        setShowTaskDialog(true);
+        setProgress(0);
+        const interval = setInterval(() => {
+          setProgress((prev) => {
+            if (prev >= 100) {
+              clearInterval(interval);
+              return 100;
+            }
+            return prev + 5;
+          });
+        }, 150);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -181,7 +200,15 @@ export default function Home() {
       />
 
       <div className="flex-1 flex flex-col">
-        {selectedTask ? (
+        {showNewTask ? (
+          <ChatContainer
+            messages={messages}
+            isLoading={isLoading}
+            input={input}
+            setInput={setInput}
+            handleSubmit={handleSubmit}
+          />
+        ) : selectedTask ? (
           <TaskDetail taskDetail={taskDetail} isLoading={isTaskDetailLoading} />
         ) : isTasksLoading ? (
           <div className="flex items-center justify-center h-full">
@@ -204,6 +231,15 @@ export default function Home() {
           </>
         )}
       </div>
+      
+      <TaskCreationDialog
+        open={showTaskDialog}
+        onOpenChange={setShowTaskDialog}
+        progress={progress}
+        tasks={tasks}
+        newTaskId={newTaskId}
+        onViewDetails={selectTask}
+      />
     </div>
   );
 }

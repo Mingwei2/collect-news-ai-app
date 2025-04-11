@@ -21,5 +21,5 @@ export class Task {
   createdAt: Date;
 
   @Column()
-  status: 'running' | 'completed' | 'failed';
+  status: 'running' | 'completed' | 'failed' | 'stopped' | 'deleted';
 }

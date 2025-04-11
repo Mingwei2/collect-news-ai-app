@@ -46,7 +46,7 @@ export class ChatService {
       );
       if (taskData) {
         aiMessage =
-          '✅ Task created successfully! We will proceed with news collection and analysis according to your requirements, and you can check the task details in the task list.';
+          '✅ 任务创建成功！我们将根据你的要求进行新闻收集和分析，你可以在任务列表中查看任务详情。';
         response.message = aiMessage;
       }
 
@@ -106,7 +106,7 @@ export class ChatService {
   private handleError(conversationId?: string) {
     return {
       message:
-        "I'm sorry, I'm having trouble processing your request right now.",
+        "抱歉，我目前无法处理你的请求。",
       timestamp: new Date().toISOString(),
       status: 'error',
       error: 'Unknown error',

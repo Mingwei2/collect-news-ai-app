@@ -26,7 +26,7 @@ export default function TaskSidebar({
       <div className="p-4">
         <h2 className="font-semibold text-lg flex items-center gap-2">
           <Newspaper className="h-5 w-5" />
-          News Tasks
+          新闻收集
         </h2>
       </div>
 
@@ -40,7 +40,7 @@ export default function TaskSidebar({
             onClick={resetConversation}
           >
             <Plus className="h-4 w-4 mr-2" />
-            Create New Task
+            创建任务
           </Button>
 
           {isLoading ? (
@@ -55,7 +55,7 @@ export default function TaskSidebar({
             </>
           ) : tasks.length === 0 ? (
             <div className="text-center p-4 text-muted-foreground text-sm">
-              No tasks yet. Start a conversation to create one.
+              暂无新闻任务
             </div>
           ) : (
             <div className="space-y-2">

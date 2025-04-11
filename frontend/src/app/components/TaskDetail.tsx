@@ -1,17 +1,78 @@
-import { Calendar, Clock, BarChart2 } from "lucide-react";
+import { Calendar, Clock, BarChart2, Pause, Play, Trash2, RefreshCw } from "lucide-react";
 import { TaskDetail as TaskDetailType } from "../page";
 import { formatDistanceToNow } from "date-fns";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface TaskDetailProps {
   taskDetail: TaskDetailType | null;
   isLoading: boolean;
 }
 
-export default function TaskDetail({ taskDetail, isLoading }: TaskDetailProps) {
+export default function TaskDetail({
+  taskDetail,
+  isLoading
+}: TaskDetailProps) {
+  const handlePause = async () => {
+    await fetch(`http://localhost:3001/tasks/${taskDetail?.id}/pause`, {
+      method: "POST",
+    });
+    window.location.reload();
+  };
+
+  const handleResume = async () => {
+    await fetch(`http://localhost:3001/tasks/${taskDetail?.id}/resume`, {
+      method: "POST",
+    });
+    window.location.reload();
+  };
+
+  const handleDelete = async () => {
+    await fetch(`http://localhost:3001/tasks/${taskDetail?.id}/delete`, {
+      method: "POST",
+    });
+    window.location.reload();
+  };
+
   return (
     <div className="flex-1 flex flex-col">
-      <div className="border-b border-border p-4 flex items-center">
+      <div className="border-b border-border p-4 flex items-center justify-between">
         <h2 className="text-xl font-semibold">{taskDetail?.keywords}</h2>
+        {taskDetail && taskDetail.status !== "deleted" && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => window.location.reload()}
+              className="p-2 rounded-full hover:bg-muted transition-colors"
+              title="刷新任务"
+            >
+              <RefreshCw className="h-5 w-5 text-blue-500" />
+            </button>
+            {taskDetail.status === "running" ? (
+              <button
+                onClick={handlePause}
+                className="p-2 rounded-full hover:bg-muted transition-colors"
+                title="暂停任务"
+              >
+                <Pause className="h-5 w-5 text-amber-500" />
+              </button>
+            ) : (
+              <button
+                onClick={handleResume}
+                className="p-2 rounded-full hover:bg-muted transition-colors"
+                title="继续任务"
+              >
+                <Play className="h-5 w-5 text-green-500" />
+              </button>
+            )}
+            <button
+              onClick={handleDelete}
+              className="p-2 rounded-full hover:bg-muted transition-colors"
+              title="删除任务"
+            >
+              <Trash2 className="h-5 w-5 text-red-500" />
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="flex-1 overflow-auto p-6">
@@ -53,11 +114,11 @@ export default function TaskDetail({ taskDetail, isLoading }: TaskDetailProps) {
                 </div>
                 <div className="flex items-center gap-2">
                   <div
-                    className={`h-2 w-2 rounded-full ${taskDetail.status === "completed"
-                        ? "bg-green-500"
-                        : taskDetail.status === "failed"
-                          ? "bg-red-500"
-                          : "bg-yellow-500"
+                    className={`h-2 w-2 rounded-full ${taskDetail.status === "running"
+                      ? "bg-green-500"
+                      : taskDetail.status === "deleted"
+                        ? "bg-red-500"
+                        : "bg-yellow-500"
                       }`}
                   />
                   <span className="text-sm text-muted-foreground">
@@ -67,6 +128,17 @@ export default function TaskDetail({ taskDetail, isLoading }: TaskDetailProps) {
                     {taskDetail.status}
                   </span>
                 </div>
+                {taskDetail.nextDate && (
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">
+                      下次执行时间:{" "}
+                    </span>
+                    <span className="text-sm font-medium">
+                      {new Date(taskDetail.nextDate).toLocaleString()}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -87,10 +159,10 @@ export default function TaskDetail({ taskDetail, isLoading }: TaskDetailProps) {
                       </span>
                     </div>
 
-                    <div className="mb-6">
-                      <p className="text-sm text-muted-foreground">
+                    <div className="mb-6 prose prose-sm max-w-none dark:prose-invert">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
                         {result.result}
-                      </p>
+                      </ReactMarkdown>
                     </div>
                   </div>
                 ))}

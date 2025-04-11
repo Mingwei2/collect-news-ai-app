@@ -11,10 +11,13 @@ import {
 } from '@nestjs/common';
 import { TaskService } from '../services/tasks.service';
 import { Task } from '../entities/task.entity';
-
+import { SchedulerRegistry } from '@nestjs/schedule';
 @Controller('tasks')
 export class TaskController {
-  constructor(private readonly taskService: TaskService) {}
+  constructor(
+    private readonly taskService: TaskService,
+    private readonly schedulerRegistry: SchedulerRegistry,
+  ) { }
 
   @Get()
   async getAllTasks(@Query('limit') limit?: string) {
@@ -32,10 +35,17 @@ export class TaskController {
   async getTask(@Param('id') id: string) {
     const task = await this.taskService.getTask(id);
     const results = await this.taskService.getTaskResults(id);
+    let nextDate;
+    try {
+      const job = this.schedulerRegistry.getCronJob(id);
+      nextDate = job.nextDate();
+    } catch (error) {
+      nextDate = null;
+    }
     if (!task) {
       throw new NotFoundException(`Task with ID ${id} not found`);
     }
-    return { ...task, results };
+    return { ...task, results, nextDate };
   }
 
   @Post()
@@ -46,6 +56,43 @@ export class TaskController {
       id,
       createdAt: new Date(),
     });
+  }
+
+  @Post(':id/pause')
+  async stopTask(@Param('id') id: string) {
+    const job = this.schedulerRegistry.getCronJob(id);
+    job.stop();
+    const task = await this.taskService.getTask(id);
+    if (!task) {
+      throw new NotFoundException(`Task with ID ${id} not found`);
+    }
+    await this.taskService.updateTask(id, { ...task, status: 'stopped' });
+    return { success: true, message: `Task with ID ${id} has been stopped` };
+  }
+
+  @Post(':id/resume')
+  async startTask(@Param('id') id: string) {
+    const job = this.schedulerRegistry.getCronJob(id);
+    job.start();
+    const task = await this.taskService.getTask(id);
+    if (!task) {
+      throw new NotFoundException(`Task with ID ${id} not found`);
+    }
+    await this.taskService.updateTask(id, { ...task, status: 'running' });
+    return { success: true, message: `Task with ID ${id} has been started` };
+  }
+
+  @Post(':id/delete')
+  async removeTask(@Param('id') id: string) {
+    const job = this.schedulerRegistry.getCronJob(id);
+    job.stop();
+    this.schedulerRegistry.deleteCronJob(id);
+    const task = await this.taskService.getTask(id);
+    if (!task) {
+      throw new NotFoundException(`Task with ID ${id} not found`);
+    }
+    await this.taskService.updateTask(id, { ...task, status: 'deleted' });
+    return { success: true, message: `Task with ID ${id} has been removed` };
   }
 
   @Put(':id')

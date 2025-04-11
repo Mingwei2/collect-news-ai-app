@@ -2,12 +2,8 @@ import {
   Card,
   CardContent,
   CardFooter,
-  CardHeader,
-  CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { useRef, useEffect } from "react";
 import MessageList from "./MessageList";
 import EmptyState from "./EmptyState";
@@ -33,12 +29,15 @@ export default function ChatContainer({
 
   const scrollToBottom = () => {
     if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+      const viewport = scrollAreaRef.current.querySelector('[data-slot="scroll-area-viewport"]');
+      if (viewport) {
+        viewport.scrollTop = viewport.scrollHeight;
+      }
     }
   };
 
   useEffect(() => {
-    scrollToBottom();
+    setTimeout(scrollToBottom, 50);
   }, [messages]);
 
   const onSubmit = (e: React.FormEvent) => {
@@ -49,15 +48,6 @@ export default function ChatContainer({
   return (
     <main className="flex-1 overflow-auto p-4">
       <Card className="h-full max-w-4xl mx-auto flex flex-col shadow-sm border-muted">
-        <CardHeader className="pb-2">
-          <CardTitle>News Collection Intent</CardTitle>
-          <CardDescription>
-            Let me know what news topics you&apos;re interested in, how often
-            you&apos;d like updates, and how you&apos;d prefer the content to be
-            analyzed.
-          </CardDescription>
-          <Separator className="my-2" />
-        </CardHeader>
 
         <CardContent className="flex-1 overflow-hidden p-0">
           <ScrollArea ref={scrollAreaRef} className="h-full p-6">

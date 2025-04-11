@@ -13,7 +13,7 @@ export default function ChatHeader({ resetConversation, isLoading }: ChatHeaderP
       <div className="flex justify-between items-center">
         <h1 className="text-xl font-bold flex items-center gap-2">
           <Bot className="h-6 w-6" />
-          AI News Assistant
+          新闻助手
         </h1>
         <TooltipProvider>
           <Tooltip>
@@ -28,7 +28,7 @@ export default function ChatHeader({ resetConversation, isLoading }: ChatHeaderP
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Clear conversation</p>
+              <p>清除对话</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
